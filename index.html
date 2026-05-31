@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>QuizAura | Premium Interactive Quiz Experience</title>
+    <!-- Bootstrap 5 CSS + Font Awesome 6 + Google Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(ellipse at 20% 30%, #0B1120, #0A0F1A, #06090F);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* animated floating particles */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle at 25% 40%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                              radial-gradient(circle at 75% 60%, rgba(6, 182, 212, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* animated grid pattern */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .quiz-container {
+            max-width: 950px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* glass-morphism card */
+        .quiz-glass-card {
+            background: rgba(18, 25, 45, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+            box-shadow: 0 30px 50px -25px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .quiz-glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 40px 60px -25px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(139, 92, 246, 0.2);
+        }
+
+        /* premium header */
+        .quiz-header-premium {
+            padding: 1.8rem 2rem;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+            border-bottom: 1px solid rgba(139, 92, 246, 0.4);
+            position: relative;
+        }
+
+        .quiz-header-premium h2 {
+            background: linear-gradient(125deg, #E0E7FF, #C7D2FE, #A5B4FC);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .quiz-badge {
+            background: rgba(139, 92, 246, 0.2);
+            backdrop-filter: blur(4px);
+            border-radius: 40px;
+            padding: 0.35rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: #C4B5FD;
+        }
+
+        /* progress section glow */
+        .progress-wrapper {
+            padding: 1rem 2rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-label-text {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #94A3B8;
+        }
+
+        .progress-bar-track {
+            background: rgba(51, 65, 85, 0.6);
+            border-radius: 30px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill-glow {
+            background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+            width: 0%;
+            height: 100%;
+            transition: width 0.5s cubic-bezier(0.25, 0.95, 0.45, 1);
+            border-radius: 30px;
+            position: relative;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+        }
+
+        /* question area */
+        .question-premium {
+            padding: 2rem 2rem 1.8rem;
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .question-tag {
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 60px;
+            padding: 0.35rem 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #A78BFA;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .question-text-premium {
+            font-size: 1.7rem;
+            font-weight: 700;
+            line-height: 1.35;
+            color: #F1F5F9;
+            letter-spacing: -0.3px;
+        }
+
+        /* elegant options */
+        .option-premium {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.2rem;
+            padding: 1rem 1.3rem;
+            margin-bottom: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-premium::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(95deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.1));
+            transition: width 0.35s ease;
+            z-index: 0;
+        }
+
+        .option-premium:hover:not(.disabled-opt) {
+            border-color: rgba(139, 92, 246, 0.6);
+            transform: translateX(6px);
+            background: rgba(51, 65, 85, 0.7);
+        }
+
+        .option-premium:hover:not(.disabled-opt)::before {
+            width: 100%;
+        }
+
+        .option-premium.selected-premium {
+            background: linear-gradient(105deg, rgba(139, 92, 246, 0.25), rgba(6, 182, 212, 0.15));
+            border-color: #8B5CF6;
+            box-shadow: 0 8px 20px -10px rgba(139, 92, 246, 0.4);
+        }
+
+        .option-letter {
+            width: 38px;
+            height: 38px;
+            background: rgba(51, 65, 85, 0.8);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #C4B5FD;
+            margin-right: 14px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .selected-premium .option-letter {
+            background: #8B5CF6;
+            color: white;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+        }
+
+        .option-text {
+            color: #E2E8F0;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* feedback cards */
+        .feedback-premium {
+            border-radius: 1.2rem;
+            padding: 1rem 1.3rem;
+            margin-top: 1.2rem;
+            animation: fadeSlideUp 0.35s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback-correct-premium {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .feedback-wrong-premium {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        /* button styles */
+        .btn-glass {
+            background: rgba(51, 65, 85, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 60px;
+            padding: 0.7rem 1.6rem;
+            font-weight: 600;
+            transition: all 0.25s;
+            color: #E2E8F0;
+        }
+
+        .btn-glass:hover:not(:disabled) {
+            background: rgba(71, 85, 105, 0.9);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-gradient {
+            background: linear-gradient(95deg, #8B5CF6, #06B6D4);
+            border: none;
+            border-radius: 60px;
+            padding: 0.7rem 1.8rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.25s;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-gradient:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            background: linear-gradient(95deg, #7C3AED, #0891B2);
+        }
+
+        .btn-reset-premium {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 60px;
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+            color: #FCA5A5;
+            transition: all 0.25s;
+        }
+
+        .btn-reset-premium:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: scale(1.02);
+            color: #FECACA;
+        }
+
+        /* result screen premium */
+        .result-premium {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            text-align: center;
+            padding: 2rem 1.8rem;
+        }
+
+        .score-ring-premium {
+            background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem auto;
+            box-shadow: 0 20px 35px -8px rgba(139, 92, 246, 0.5);
+        }
+
+        .score-inner-premium {
+            background: #0F172A;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-number-premium {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #E0E7FF, #A5B4FC);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.9rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #64748B;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .disabled-opt {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            .question-premium {
+                padding: 1.3rem;
+            }
+            .quiz-header-premium {
+                padding: 1.2rem 1.3rem;
+            }
+            .question-text-premium {
+                font-size: 1.3rem;
+            }
+            .option-letter {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+                margin-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="quiz-glass-card" id="quizRoot"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // ---------- QUIZ DATA (enriched & professional) ----------
+    const QUIZ_DATA = [
+        {
+            question: "What does HTML stand for?",
+            options: ["Hyper Text Markup Language", "High-Level Text Machine Language", "Hyperlink and Text Markup Language", "Home Tool Markup Language"],
+            correct: 0,
+            explanation: "HTML (Hyper Text Markup Language) is the standard markup language for documents designed to be displayed in a web browser."
+        },
+        {
+            question: "Which CSS property is used to control the spacing between elements?",
+            options: ["spacing", "margin", "padding-gap", "border-space"],
+            correct: 1,
+            explanation: "The 'margin' property creates space around elements, outside of any defined borders."
+        },
+        {
+            question: "Which JavaScript framework is maintained by Meta?",
+            options: ["Angular", "Vue.js", "React", "Svelte"],
+            correct: 2,
+            explanation: "React was created by Jordan Walke, a software engineer at Meta, and is widely used for building user interfaces."
+        },
+        {
+            question: "What does the CSS property 'display: flex' do?",
+            options: ["Creates a grid layout", "Enables flexible box layout", "Makes element hidden", "Adds shadow"],
+            correct: 1,
+            explanation: "Flexbox is a one-dimensional layout model that helps distribute space and align items efficiently."
+        },
+        {
+            question: "Which symbol is used for multi-line comments in JavaScript?",
+            options: ["//", "<!-- -->", "/* */", "** **"],
+            correct: 2,
+            explanation: "Multi-line comments in JavaScript start with '/*' and end with '*/'."
+        },
+        {
+            question: "What does API stand for in web development?",
+            options: ["Application Programming Interface", "Advanced Protocol Integration", "Application Process Integration", "Automated Program Interface"],
+            correct: 0,
+            explanation: "API (Application Programming Interface) allows different software applications to communicate with each other."
+        }
+    ];
+
+    // ---------- APP STATE ----------
+    let currentIndex = 0;
+    let userAnswers = new Array(QUIZ_DATA.length).fill(null);
+    let quizCompleted = false;
+    const rootContainer = document.getElementById('quizRoot');
+
+    function getAnsweredCount() {
+        return userAnswers.filter(ans => ans !== null).length;
+    }
+
+    function getProgressPercentage() {
+        return (getAnsweredCount() / QUIZ_DATA.length) * 100;
+    }
+
+    function render() {
+        if (currentIndex >= QUIZ_DATA.length || quizCompleted) {
+            renderResultScreen();
+        } else {
+            renderQuestionScreen();
+        }
+    }
+
+    function renderQuestionScreen() {
+        const q = QUIZ_DATA[currentIndex];
+        const selectedAnswer = userAnswers[currentIndex];
+        const isAnswered = (selectedAnswer !== null);
+        const total = QUIZ_DATA.length;
+        const currentNum = currentIndex + 1;
+        const progressPercent = getProgressPercentage();
+        const letters = ['A', 'B', 'C', 'D'];
+
+        let optionsHtml = '';
+        q.options.forEach((opt, idx) => {
+            const isSelected = (selectedAnswer === idx);
+            const disabledClass = isAnswered ? 'disabled-opt' : '';
+            const selectedClass = isSelected ? 'selected-premium' : '';
+            const checkIcon = isSelected ? '<i class="fas fa-check-circle" style="color:#8B5CF6; font-size:1.2rem;"></i>' : '';
+
+            optionsHtml += `
+                <div class="option-premium d-flex align-items-center justify-content-between ${disabledClass} ${selectedClass}" data-opt-index="${idx}">
+                    <div class="d-flex align-items-center">
+                        <span class="option-letter fw-bold">${letters[idx]}</span>
+                        <span class="option-text">${escapeHtml(opt)}</span>
+                    </div>
+                    ${checkIcon}
+                </div>
+            `;
+        });
+
+        let feedbackHtml = '';
+        if (isAnswered) {
+            const isCorrect = (selectedAnswer === q.correct);
+            const correctAnswerText = q.options[q.correct];
+            const userChoiceText = q.options[selectedAnswer];
+
+            if (isCorrect) {
+                feedbackHtml = `
+                    <div class="feedback-premium feedback-correct-premium">
+                        <div class="d-flex gap-3 align-items-start">
+                            <i class="fas fa-circle-check text-success fa-lg mt-1"></i>
+                            <div>
+                                <span class="fw-bold text-success">Correct Answer</span>
+                                <p class="small mb-0 mt-1" style="color: #CBD5E1;">${escapeHtml(userChoiceText)} — ${escapeHtml(q.explanation)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                feedbackHtml = `
+                    <div class="feedback-premium feedback-wrong-premium">
+                        <div class="d-flex gap-3 align-items-start">
+                            <i class="fas fa-circle-xmark text-danger fa-lg mt-1"></i>
+                            <div>
+                                <span class="fw-bold text-danger">Incorrect</span>
+                                <p class="small mb-0 mt-1" style="color: #CBD5E1;">Your choice: "${escapeHtml(userChoiceText)}"<br>Correct: "${escapeHtml(correctAnswerText)}"<br><span class="text-secondary">${escapeHtml(q.explanation)}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        const isPrevDisabled = (currentIndex === 0);
+        const isNextDisabled = !isAnswered;
+
+        const mainHtml = `
+            <div class="quiz-header-premium d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2 class="mb-0 fw-bold fs-3"><i class="fas fa-gem me-2" style="color:#8B5CF6;"></i>QuizAura</h2>
+                    <p class="mb-0 small opacity-75">Master Your Skills</p>
+                </div>
+                <div class="mt-2 mt-sm-0">
+                    <span class="quiz-badge"><i class="fas fa-layer-group me-1"></i>${currentNum} / ${total}</span>
+                </div>
+            </div>
+            <div class="progress-wrapper">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="progress-label-text"><i class="fas fa-bolt me-1"></i>PROGRESS</span>
+                    <span class="progress-label-text">${Math.round(progressPercent)}%</span>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-fill-glow" style="width: ${progressPercent}%;"></div>
+                </div>
+            </div>
+            <div class="question-premium">
+                <div class="mb-4">
+                    <span class="question-tag"><i class="fas fa-question-circle me-1"></i> Question ${currentNum}</span>
+                    <h3 class="question-text-premium mt-3">${escapeHtml(q.question)}</h3>
+                </div>
+                <div id="optionsArea">
+                    ${optionsHtml}
+                </div>
+                ${feedbackHtml}
+                <div class="d-flex flex-wrap justify-content-between gap-3 mt-4">
+                    <button class="btn-glass" id="prevBtnQuiz" ${isPrevDisabled ? 'disabled' : ''}>
+                        <i class="fas fa-chevron-left me-1"></i> Previous
+                    </button>
+                    <button class="btn-reset-premium" id="resetBtnQuiz">
+                        <i class="fas fa-arrows-rotate me-1"></i> Reset
+                    </button>
+                    <button class="btn-gradient" id="nextBtnQuiz" ${isNextDisabled ? 'disabled' : ''}>
+                        Next <i class="fas fa-chevron-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+            <footer>
+                <i class="fas fa-brain me-1"></i> Select any option to reveal feedback & explanation
+            </footer>
+        `;
+
+        rootContainer.innerHTML = mainHtml;
+
+        // attach option click handlers
+        const optionDivs = document.querySelectorAll('.option-premium');
+        optionDivs.forEach(div => {
+            div.addEventListener('click', () => {
+                if (userAnswers[currentIndex] !== null) return;
+                const selectedIdx = parseInt(div.getAttribute('data-opt-index'));
+                userAnswers[currentIndex] = selectedIdx;
+                render();
+            });
+        });
+
+        const prevBtn = document.getElementById('prevBtnQuiz');
+        const nextBtn = document.getElementById('nextBtnQuiz');
+        const resetBtn = document.getElementById('resetBtnQuiz');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    render();
+                }
+            });
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                if (userAnswers[currentIndex] !== null) {
+                    if (currentIndex + 1 < QUIZ_DATA.length) {
+                        currentIndex++;
+                        render();
+                    } else if (currentIndex + 1 === QUIZ_DATA.length) {
+                        quizCompleted = true;
+                        render();
+                    }
+                }
+            });
+        }
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => fullReset());
+        }
+    }
+
+    function renderResultScreen() {
+        const total = QUIZ_DATA.length;
+        let score = 0;
+        for (let i = 0; i < total; i++) {
+            if (userAnswers[i] !== null && userAnswers[i] === QUIZ_DATA[i].correct) {
+                score++;
+            }
+        }
+        const accuracy = Math.round((score / total) * 100);
+        
+        let resultMessage = '';
+        let iconType = 'fa-chart-line';
+        if (accuracy === 100) {
+            resultMessage = 'Flawless Victory';
+            iconType = 'fa-crown';
+        } else if (accuracy >= 80) {
+            resultMessage = 'Outstanding Performance';
+            iconType = 'fa-trophy';
+        } else if (accuracy >= 60) {
+            resultMessage = 'Good Knowledge';
+            iconType = 'fa-star';
+        } else {
+            resultMessage = 'Keep Learning';
+            iconType = 'fa-book';
+        }
+
+        const resultHtml = `
+            <div class="quiz-header-premium text-center">
+                <i class="fas ${iconType} fa-2x mb-2" style="color: #FBBF24;"></i>
+                <h2 class="fw-bold">Assessment Complete</h2>
+                <p class="mb-0 opacity-75">${resultMessage}</p>
+            </div>
+            <div class="result-premium">
+                <div class="score-ring-premium">
+                    <div class="score-inner-premium">
+                        <span class="score-number-premium">${score}</span>
+                        <span class="fs-6 fw-normal text-secondary">/${total}</span>
+                    </div>
+                </div>
+                <h3 class="fw-bold mt-3" style="color: #F1F5F9;">${score} / ${total}</h3>
+                <div class="progress-bar-track w-75 mx-auto my-3">
+                    <div class="progress-fill-glow" style="width: ${accuracy}%; background: linear-gradient(90deg, #10B981, #34D399);"></div>
+                </div>
+                <p class="text-secondary"><i class="fas fa-percent me-1"></i> Accuracy Rate: ${accuracy}%</p>
+                <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                    <button class="btn-gradient" id="restartQuizComplete"><i class="fas fa-play me-2"></i>Restart Quiz</button>
+                    <button class="btn-reset-premium" id="fullResetComplete"><i class="fas fa-undo-alt me-2"></i>Full Reset</button>
+                </div>
+                <div class="mt-4 small text-secondary">
+                    <i class="fas fa-check-double me-1"></i> Answered ${getAnsweredCount()} of ${total} questions
+                </div>
+            </div>
+            <footer>
+                <i class="fas fa-chalkboard-user me-1"></i> Challenge yourself again to improve
+            </footer>
+        `;
+
+        rootContainer.innerHTML = resultHtml;
+        const restartComplete = document.getElementById('restartQuizComplete');
+        const fullResetComplete = document.getElementById('fullResetComplete');
+        if (restartComplete) restartComplete.addEventListener('click', () => fullReset());
+        if (fullResetComplete) fullResetComplete.addEventListener('click', () => fullReset());
+    }
+
+    function fullReset() {
+        userAnswers = new Array(QUIZ_DATA.length).fill(null);
+        currentIndex = 0;
+        quizCompleted = false;
+        render();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    render();
+</script>
+</body>
+</html>
